@@ -5,40 +5,47 @@
 
 const byte DREAD = D2;
 
-const char* mqtt_server = "m21.cloudmqtt.com";
-const int   mqtt_port   = 19645;
-const char* mqtt_user   = "lzxaksqt";
-const char* mqtt_pass   = "MEsnDE8fOjpl";
+const char* mqtt_server = "192.168.0.15";
+const int   mqtt_port   = 1883;
+const char* mqtt_user   = "";
+const char* mqtt_pass   = "";
 
-Espini *cosa;
+Espini *esp;
 WiFiClient espClient;
 PubSubClient *mqttc;
 
-void callback(char* topic, byte* payload, unsigned int length) {
-    cosa->log("Callback!");
+void conecta() {
+  esp->log("Conectando");
+  mqttc->connect(esp->getchipid(),mqtt_user, mqtt_pass);
+  esp->log("Conectado!");
 }
 
 void flip() {
-    cosa->log(String(digitalRead(DREAD)).c_str());
-    mqttc->publish("iluz", String(digitalRead(DREAD)).c_str());
+  char topic[100],payload[100],todo[200];
+
+  snprintf(topic,100,"%s/%s","iluz",esp->getchipid());
+  if (digitalRead(DREAD)) snprintf(payload,100,"ON");
+                     else snprintf(payload,100,"OFF");
+  snprintf(todo,200,"%s/%s",topic,payload);
+
+  esp->log(todo);
+ 
+  mqttc->publish(topic,payload);
 }
 
 void setup() {
-  cosa=new Espini(wifis(),"iluz",ver,otasrv,logsrv);
-  cosa->log("Iniciando");
+  esp=new Espini(wifis(),"iluz",ver,otasrv,logsrv);
+  esp->log("Iniciando");
 
   mqttc=new PubSubClient(espClient);
   mqttc->setServer(mqtt_server,mqtt_port);
-  mqttc->setCallback(callback);
-  cosa->log("Conectando");
-  while (!mqttc->connect(cosa->getchipid(),mqtt_user, mqtt_pass)) delay(5000);
-  cosa->log("Conectado!");
-
+ 
   pinMode(DREAD, INPUT);
   attachInterrupt(digitalPinToInterrupt(DREAD), flip, CHANGE);
 }
 
 void loop() {
-  while (true) { cosa->log("ALIVE!!"); delay(300e3); }
+  esp->log("loop!");
+  if (!mqttc->connected()) conecta();
+  mqttc->loop();
 }
-
