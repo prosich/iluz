@@ -21,12 +21,12 @@ void conecta() {
 }
 
 void flip() {
-  char topic[100],payload[100],todo[200];
+  char topic[100], payload[100], todo[200];
 
-  snprintf(topic,100,"%s/%s","iluz",esp->getchipid());
-  if (digitalRead(DREAD)) snprintf(payload,100,"ON");
-                     else snprintf(payload,100,"OFF");
-  snprintf(todo,200,"%s/%s",topic,payload);
+  snprintf(topic,sizeof(topic),"%s/%s","iluz",esp->getchipid());
+  if (digitalRead(DREAD)) snprintf(payload,sizeof(payload),"ON");
+                     else snprintf(payload,sizeof(payload),"OFF");
+  snprintf(todo,sizeof(todo),"%s/%s",topic,payload);
 
   esp->log(todo);
  
@@ -45,7 +45,13 @@ void setup() {
 }
 
 void loop() {
-  esp->log("loop!");
+  int secs=0;
+
+  // De vez en cuando, por si acaso, refrescar estado a mqtt.
+  if (secs>300) { flip(); secs=0; }
+  // Empiricamente se ve que loop se activa cada 6 secs. 
+  else secs+=6;
+
   if (!mqttc->connected()) conecta();
   mqttc->loop();
 }
