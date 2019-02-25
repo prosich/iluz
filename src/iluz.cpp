@@ -47,11 +47,12 @@ void setup() {
 void loop() {
   int secs=0;
 
+  if (!mqttc->connected()) conecta();
+
   // De vez en cuando, por si acaso, refrescar estado a mqtt.
   if (secs>=300) { flip(); secs=0; }
   // Empiricamente se ve que loop se activa cada 6 secs. 
   else secs+=6;
 
-  if (!mqttc->connected()) conecta();
   mqttc->loop();
 }
