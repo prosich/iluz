@@ -48,7 +48,7 @@ void loop() {
   int secs=0;
 
   // De vez en cuando, por si acaso, refrescar estado a mqtt.
-  if (secs>300) { flip(); secs=0; }
+  if (secs>=300) { flip(); secs=0; }
   // Empiricamente se ve que loop se activa cada 6 secs. 
   else secs+=6;
 
