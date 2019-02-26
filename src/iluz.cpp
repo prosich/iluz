@@ -42,26 +42,23 @@ void setup() {
  
   pinMode(DREAD, INPUT);
   attachInterrupt(digitalPinToInterrupt(DREAD), flip, CHANGE);
-
-unsigned int secs=0;
-
-  char buf[100];
-
-for(;;) {
-  if (!mqttc->connected()) conecta();
-
-  snprintf(buf,sizeof(buf),"%u",secs);
-  esp->log(buf);
-  // De vez en cuando, por si acaso, refrescar estado a mqtt.
-  if (secs>=300) { flip(); secs=0; }
-  // Empiricamente se ve que loop se activa cada 6 secs. 
-  else secs=secs+6;
-
-  mqttc->loop();
 }
-
-}
-
 
 void loop() {
+  static int secs=0;
+ 
+  if (!mqttc->connected()) conecta();
+ 
+  char buf[100];
+  snprintf(buf,sizeof(buf),"%d",secs);
+  esp->log(buf);
+
+  // De vez en cuando, por si acaso, refrescar estado a mqtt.
+  if (secs>=300) { flip(); secs=0; }
+
+  mqttc->loop();
+
+  // Empiricamente se ve que loop se activa cada 6 secs. 
+  secs+=6;
+
 }
