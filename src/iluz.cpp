@@ -46,7 +46,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(DREAD), pio, CHANGE);
 
   // De vez en cuando, por si acaso, refrescar estado a mqtt.
-  tic.attach(300,pio); 
+  tic.attach(120,pio); 
 }
 
 void loop() {
