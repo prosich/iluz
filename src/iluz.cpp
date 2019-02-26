@@ -1,5 +1,6 @@
 #include <Espini.h>
 #include <PubSubClient.h>
+#include <Ticker.h>
 #include "config.h"
 #include "ver.h"
 
@@ -13,6 +14,7 @@ const char* mqtt_pass   = "";
 Espini *esp;
 WiFiClient espClient;
 PubSubClient *mqttc;
+Ticker tic;
 
 void conecta() {
   esp->log("Conectando");
@@ -20,7 +22,7 @@ void conecta() {
   esp->log("Conectado!");
 }
 
-void flip() {
+void pio() {
   char topic[100], payload[100], todo[200];
 
   snprintf(topic,sizeof(topic),"%s/%s","iluz",esp->getchipid());
@@ -41,24 +43,13 @@ void setup() {
   mqttc->setServer(mqtt_server,mqtt_port);
  
   pinMode(DREAD, INPUT);
-  attachInterrupt(digitalPinToInterrupt(DREAD), flip, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(DREAD), pio, CHANGE);
+
+  // De vez en cuando, por si acaso, refrescar estado a mqtt.
+  tic.attach(300,pio); 
 }
 
 void loop() {
-  static int secs=0;
- 
   if (!mqttc->connected()) conecta();
- 
-  char buf[100];
-  snprintf(buf,sizeof(buf),"%d",secs);
-  esp->log(buf);
-
-  // De vez en cuando, por si acaso, refrescar estado a mqtt.
-  if (secs>=300) { flip(); secs=0; }
-
   mqttc->loop();
-
-  // Empiricamente se ve que loop se activa cada 6 secs. 
-  secs+=6;
-
 }
