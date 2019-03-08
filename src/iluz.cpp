@@ -30,9 +30,8 @@ void pio() {
                      else snprintf(payload,sizeof(payload),"OFF");
   snprintf(todo,sizeof(todo),"%s/%s",topic,payload);
 
-  esp->log(todo);
- 
   mqttc->publish(topic,payload);
+  //esp->log(todo);
 }
 
 void setup() {
@@ -42,11 +41,11 @@ void setup() {
   mqttc=new PubSubClient(espClient);
   mqttc->setServer(mqtt_server,mqtt_port);
  
-  pinMode(DREAD, INPUT);
+  pinMode(DREAD, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(DREAD), pio, CHANGE);
 
   // De vez en cuando, por si acaso, refrescar estado a mqtt.
-  tic.attach(120,pio); 
+  //tic.attach(120,pio); 
 }
 
 void loop() {
